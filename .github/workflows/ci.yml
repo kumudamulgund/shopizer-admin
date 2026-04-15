@@ -11,7 +11,7 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build-and-test:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -27,8 +27,14 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Upload dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-dist
+          path: dist/
+
   test:
-    needs: build-and-test
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -44,14 +50,8 @@ jobs:
       - name: Run tests
         run: npx ng test --watch=false --browsers=ChromeHeadless
 
-      - name: Upload dist
-        uses: actions/upload-artifact@v4
-        with:
-          name: admin-dist
-          path: dist/
-
   docker:
-    needs: [build-and-test, test]
+    needs: [build, test]
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
     permissions:
